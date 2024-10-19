@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Countdown Timer with Customizable Warning</title>
+    <title>1 Day Wraps Countdown Timer</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -11,13 +11,19 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-            background-color: #f0f0f0;
+            background: linear-gradient(to bottom, #2c2c2c, #1a1a1a);
+            color: #ffffff;
+        }
+        #logo {
+            max-width: 300px;
+            margin-bottom: 2rem;
         }
         #timer {
             font-size: 6rem;
             margin-bottom: 2rem;
+            color: #4CAF50;
         }
         .input-group {
             display: flex;
@@ -27,6 +33,7 @@
         }
         .input-group label {
             margin-bottom: 0.5rem;
+            color: #cccccc;
         }
         #input-container, #control-container {
             display: flex;
@@ -36,12 +43,16 @@
         input, button {
             font-size: 1rem;
             padding: 0.5rem;
+            background-color: #333333;
+            color: #ffffff;
+            border: 1px solid #555555;
         }
         #start { background-color: #4CAF50; color: white; }
         #stop { background-color: #f44336; color: white; }
     </style>
 </head>
 <body>
+    <img id="logo" src="1daywraps.png" alt="1 Day Wraps Logo">
     <div id="timer">00:00:00</div>
     <div id="input-container">
         <div class="input-group">
