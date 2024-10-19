@@ -76,27 +76,30 @@
         let totalSeconds;
         let warningSeconds;
         let isRunning = false;
+        let warningTriggered = false;
 
         function setTimer() {
             totalSeconds = parseInt(minutesInput.value) * 60;
             warningSeconds = parseInt(warningTimeInput.value) * 60;
             updateTimerDisplay();
+            warningTriggered = false;
         }
 
         function startTimer() {
             if (!isRunning && totalSeconds > 0) {
                 isRunning = true;
                 countdown = setInterval(() => {
-                    totalSeconds--;
-                    updateTimerDisplay();
-
-                    if (totalSeconds === warningSeconds) {
+                    if (totalSeconds <= warningSeconds && !warningTriggered) {
                         warningSound.play();
+                        warningTriggered = true;
                     }
 
                     if (totalSeconds <= 0) {
                         stopTimer();
                         alarmSound.play();
+                    } else {
+                        totalSeconds--;
+                        updateTimerDisplay();
                     }
                 }, 1000);
             }
