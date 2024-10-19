@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countdown Timer with Customizable Warning</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #timer {
+            font-size: 6rem;
+            margin-bottom: 2rem;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        .input-group label {
+            margin-bottom: 0.5rem;
+        }
+        #input-container, #control-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        input, button {
+            font-size: 1rem;
+            padding: 0.5rem;
+        }
+        #start { background-color: #4CAF50; color: white; }
+        #stop { background-color: #f44336; color: white; }
+    </style>
+</head>
+<body>
+    <div id="timer">00:00:00</div>
+    <div id="input-container">
+        <div class="input-group">
+            <label for="minutes">Timer Duration (minutes):</label>
+            <input type="number" id="minutes" min="1" value="60">
+        </div>
+        <div class="input-group">
+            <label for="warningTime">Warning Time (minutes):</label>
+            <input type="number" id="warningTime" min="1" value="20">
+        </div>
+    </div>
+    <div id="control-container">
+        <button id="set">Set Timer</button>
+        <button id="start">Start</button>
+        <button id="stop">Stop</button>
+    </div>
+
+    <audio id="alarm-sound" src="https://cdn.freesound.org/previews/219/219244_4082826-lq.mp3"></audio>
+    <audio id="warning-sound" src="https://cdn.freesound.org/previews/415/415296_1629550-lq.mp3"></audio>
+
+    <script>
+        const timerDisplay = document.getElementById('timer');
+        const minutesInput = document.getElementById('minutes');
+        const warningTimeInput = document.getElementById('warningTime');
+        const setButton = document.getElementById('set');
+        const startButton = document.getElementById('start');
+        const stopButton = document.getElementById('stop');
+        const alarmSound = document.getElementById('alarm-sound');
+        const warningSound = document.getElementById('warning-sound');
+
+        let countdown;
+        let totalSeconds;
+        let warningSeconds;
+        let isRunning = false;
+
+        function setTimer() {
+            totalSeconds = parseInt(minutesInput.value) * 60;
+            warningSeconds = parseInt(warningTimeInput.value) * 60;
+            updateTimerDisplay();
+        }
+
+        function startTimer() {
+            if (!isRunning && totalSeconds > 0) {
+                isRunning = true;
+                countdown = setInterval(() => {
+                    totalSeconds--;
+                    updateTimerDisplay();
+
+                    if (totalSeconds === warningSeconds) {
+                        warningSound.play();
+                    }
+
+                    if (totalSeconds <= 0) {
+                        stopTimer();
+                        alarmSound.play();
+                    }
+                }, 1000);
+            }
+        }
+
+        function stopTimer() {
+            clearInterval(countdown);
+            isRunning = false;
+        }
+
+        function updateTimerDisplay() {
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            timerDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        setButton.addEventListener('click', setTimer);
+        startButton.addEventListener('click', startTimer);
+        stopButton.addEventListener('click', stopTimer);
+
+        // Initialize the timer
+        setTimer();
+    </script>
+</body>
+</html>
