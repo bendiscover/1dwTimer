@@ -153,8 +153,18 @@
         const testSoundButton = document.getElementById('test-sound');
 
         testSoundButton.addEventListener('click', () => {
-            alarmSound.play();
+            playAlarmSound();
         });
+
+        function playAlarmSound() {
+            alarmSound.currentTime = 0; // Reset the audio to the beginning
+            alarmSound.play().catch(error => console.error('Error playing alarm:', error));
+        }
+
+        function playWarningSound() {
+            warningSound.currentTime = 0; // Reset the audio to the beginning
+            warningSound.play().catch(error => console.error('Error playing warning:', error));
+        }
 
         function formatButtonLabel(minutes) {
             if (minutes < 60) {
@@ -276,13 +286,13 @@
                     keepScreenOn();
                     countdown = setInterval(() => {
                         if (totalSeconds <= warningSeconds && !warningTriggered) {
-                            warningSound.play();
+                            playWarningSound();
                             warningTriggered = true;
                         }
 
                         if (totalSeconds <= 0) {
                             stopTimer();
-                            alarmSound.play();
+                            playAlarmSound();
                         } else {
                             totalSeconds--;
                             updateTimerDisplay();
