@@ -141,7 +141,7 @@
 <body>
     <img id="logo" src="1daywraps.png" alt="1 Day Wraps Logo">
     <div class="timer-columns" id="timer-columns"></div>
-    <button class="sound-test" id="test-sound">Test Alarm Sound!</button>
+    <button class="sound-test" id="test-sound">Test Alarm Sound</button>
 
     <audio id="alarm-sound" src="TimerComplete02.wav" preload="auto"></audio>
     <audio id="warning-sound" src="Fantasy SFX 002.wav" preload="auto"></audio>
@@ -152,52 +152,30 @@
         const warningSound = document.getElementById('warning-sound');
         const testSoundButton = document.getElementById('test-sound');
 
+        let wakeLock = null;
+
         testSoundButton.addEventListener('click', () => {
             playAlarmSound();
         });
 
         function playAlarmSound() {
             console.log('Attempting to play alarm sound');
-            if (alarmSound.readyState === 4) {
-                alarmSound.currentTime = 0;
-                alarmSound.play().then(() => {
-                    console.log('Alarm sound played successfully');
-                }).catch(error => {
-                    console.error('Error playing alarm:', error);
-                });
-            } else {
-                console.log('Alarm sound not ready, waiting...');
-                alarmSound.addEventListener('canplaythrough', () => {
-                    alarmSound.currentTime = 0;
-                    alarmSound.play().then(() => {
-                        console.log('Alarm sound played successfully after waiting');
-                    }).catch(error => {
-                        console.error('Error playing alarm after waiting:', error);
-                    });
-                }, { once: true });
-            }
+            alarmSound.currentTime = 0;
+            alarmSound.play().then(() => {
+                console.log('Alarm sound played successfully');
+            }).catch(error => {
+                console.error('Error playing alarm:', error);
+            });
         }
 
         function playWarningSound() {
             console.log('Attempting to play warning sound');
-            if (warningSound.readyState === 4) {
-                warningSound.currentTime = 0;
-                warningSound.play().then(() => {
-                    console.log('Warning sound played successfully');
-                }).catch(error => {
-                    console.error('Error playing warning:', error);
-                });
-            } else {
-                console.log('Warning sound not ready, waiting...');
-                warningSound.addEventListener('canplaythrough', () => {
-                    warningSound.currentTime = 0;
-                    warningSound.play().then(() => {
-                        console.log('Warning sound played successfully after waiting');
-                    }).catch(error => {
-                        console.error('Error playing warning after waiting:', error);
-                    });
-                }, { once: true });
-            }
+            warningSound.currentTime = 0;
+            warningSound.play().then(() => {
+                console.log('Warning sound played successfully');
+            }).catch(error => {
+                console.error('Error playing warning:', error);
+            });
         }
 
         function formatButtonLabel(minutes) {
@@ -390,23 +368,27 @@
             }
         }
 
-        function keepScreenOn() {
-            if (navigator.wakeLock) {
-                navigator.wakeLock.request('screen').then(lock => {
+        async function keepScreenOn() {
+            if ('wakeLock' in navigator && wakeLock === null) {
+                try {
+                    wakeLock = await navigator.wakeLock.request('screen');
                     console.log('Screen wake lock is active');
-                }).catch(err => {
+                } catch (err) {
                     console.error(`${err.name}, ${err.message}`);
-                });
+                }
             }
         }
 
         function allowScreenSleep() {
-            if (navigator.wakeLock) {
-                navigator.wakeLock.release('screen').then(() => {
-                    console.log('Screen wake lock is released');
-                }).catch(err => {
-                    console.error(`${err.name}, ${err.message}`);
-                });
+            if (wakeLock !== null) {
+                wakeLock.release()
+                    .then(() => {
+                        wakeLock = null;
+                        console.log('Screen wake lock is released');
+                    })
+                    .catch((err) => {
+                        console.error(`${err.name}, ${err.message}`);
+                    });
             }
         }
 
