@@ -12,12 +12,13 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
+            padding-top: 2rem;
             background: linear-gradient(to bottom, #2c2c2c, #1a1a1a);
             color: #ffffff;
         }
         #logo {
             max-width: 300px;
-            margin-bottom: 2rem;
+            margin-bottom: 3rem;
         }
         .timer-columns {
             display: flex;
@@ -29,13 +30,13 @@
         .timer-column {
             background-color: rgba(255,255,255,0.1);
             border-radius: 10px;
-            padding: 1rem;
-            width: 300px;
+            padding: 1.5rem;
+            width: 320px;
             position: relative;
         }
         .timer-display {
-            font-size: 3rem;
-            margin-bottom: 1rem;
+            font-size: 4rem;
+            margin: 1rem 0;
             color: #4CAF50;
             text-align: center;
         }
@@ -55,7 +56,6 @@
             justify-content: center;
             gap: 0.5rem;
             margin-bottom: 1rem;
-            max-width: 400px;
         }
         button {
             font-size: 1rem;
@@ -68,21 +68,22 @@
         button:hover {
             background-color: #444444;
         }
+        .start, .stop {
+            font-size: 1.2rem;
+            padding: 0.7rem 1.5rem;
+            margin: 0 0.5rem;
+        }
         .start { background-color: #4CAF50; color: white; }
         .stop { background-color: #f44336; color: white; }
         .selected {
             background-color: #4CAF50;
             color: white;
         }
-        #add-column-container {
-            display: flex;
-            align-items: center;
-            margin-top: 1rem;
-        }
         #add-column {
             font-size: 2rem;
             padding: 0.5rem 1rem;
             margin-left: 1rem;
+            align-self: flex-start;
         }
         .name-buttons {
             display: flex;
@@ -106,41 +107,24 @@
             color: #ffffff;
             cursor: pointer;
         }
+        .control-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 1rem;
+        }
     </style>
 </head>
 <body>
     <img id="logo" src="1daywraps.png" alt="1 Day Wraps Logo">
     <div class="timer-columns" id="timer-columns"></div>
-    <div id="add-column-container">
-        <div class="name-buttons">
-            <button onclick="toggleName(this)">Ben</button>
-            <button onclick="toggleName(this)">Chris</button>
-            <button onclick="toggleName(this)">Andrew</button>
-            <button onclick="toggleName(this)">Katie</button>
-        </div>
-        <button id="add-column">+</button>
-    </div>
 
     <audio id="alarm-sound" src="TimerComplete02.wav"></audio>
     <audio id="warning-sound" src="Fantasy SFX 002.wav"></audio>
 
     <script>
         const timerColumns = document.getElementById('timer-columns');
-        const addColumnButton = document.getElementById('add-column');
         const alarmSound = document.getElementById('alarm-sound');
         const warningSound = document.getElementById('warning-sound');
-
-        let selectedNames = [];
-
-        function toggleName(button) {
-            button.classList.toggle('selected');
-            updateSelectedNames();
-        }
-
-        function updateSelectedNames() {
-            selectedNames = Array.from(document.querySelectorAll('.name-buttons .selected'))
-                .map(button => button.textContent);
-        }
 
         function formatButtonLabel(minutes) {
             if (minutes < 60) {
@@ -165,28 +149,34 @@
             const column = document.createElement('div');
             column.className = 'timer-column';
             
+            const nameButtons = document.createElement('div');
+            nameButtons.className = 'name-buttons';
+            ['Ben', 'Chris', 'Andrew', 'Katie'].forEach(name => {
+                const button = document.createElement('button');
+                button.textContent = name;
+                button.onclick = function() { 
+                    this.classList.toggle('selected');
+                    updateColumnTitle(column);
+                };
+                nameButtons.appendChild(button);
+            });
+            column.appendChild(nameButtons);
+
             const title = document.createElement('div');
             title.className = 'column-title';
-            title.textContent = selectedNames.join(' & ') || 'Timer';
+            title.textContent = 'Timer';
             column.appendChild(title);
 
             if (!isDefault) {
                 const closeButton = document.createElement('button');
                 closeButton.className = 'close-button';
                 closeButton.innerHTML = '&times;';
-                closeButton.addEventListener('click', () => column.remove());
+                closeButton.addEventListener('click', () => {
+                    column.remove();
+                    updateAddButtonPosition();
+                });
                 column.appendChild(closeButton);
             }
-
-            const nameButtons = document.createElement('div');
-            nameButtons.className = 'name-buttons';
-            ['Ben', 'Chris', 'Andrew', 'Katie'].forEach(name => {
-                const button = document.createElement('button');
-                button.textContent = name;
-                button.onclick = function() { toggleName(this); };
-                nameButtons.appendChild(button);
-            });
-            column.appendChild(nameButtons);
 
             const timerDisplay = document.createElement('div');
             timerDisplay.className = 'timer-display';
@@ -209,15 +199,17 @@
             warningGroup.appendChild(warningButtons);
             column.appendChild(warningGroup);
 
+            const controlButtons = document.createElement('div');
+            controlButtons.className = 'control-buttons';
             const startButton = document.createElement('button');
             startButton.className = 'start';
             startButton.textContent = 'Start';
-            column.appendChild(startButton);
-
             const stopButton = document.createElement('button');
             stopButton.className = 'stop';
             stopButton.textContent = 'Stop';
-            column.appendChild(stopButton);
+            controlButtons.appendChild(startButton);
+            controlButtons.appendChild(stopButton);
+            column.appendChild(controlButtons);
 
             let totalSeconds = 0;
             let warningSeconds = 0;
@@ -287,6 +279,35 @@
             setWarning(20);
 
             timerColumns.appendChild(column);
+            updateAddButtonPosition();
+        }
+
+        function updateColumnTitle(column) {
+            const selectedNames = Array.from(column.querySelectorAll('.name-buttons .selected'))
+                .map(button => button.textContent);
+            const title = column.querySelector('.column-title');
+            title.textContent = selectedNames.join(' & ') || 'Timer';
+        }
+
+        function updateAddButtonPosition() {
+            let addButton = document.getElementById('add-column');
+            if (!addButton) {
+                addButton = document.createElement('button');
+                addButton.id = 'add-column';
+                addButton.textContent = '+';
+                addButton.addEventListener('click', () => createTimerColumn(false));
+                document.body.appendChild(addButton);
+            }
+            const lastColumn = timerColumns.lastElementChild;
+            if (lastColumn) {
+                const rect = lastColumn.getBoundingClientRect();
+                addButton.style.position = 'absolute';
+                addButton.style.left = `${rect.right + 20}px`;
+                addButton.style.top = `${rect.top}px`;
+            } else {
+                addButton.style.position = 'static';
+                addButton.style.marginTop = '1rem';
+            }
         }
 
         function keepScreenOn() {
@@ -308,8 +329,6 @@
                 });
             }
         }
-
-        addColumnButton.addEventListener('click', () => createTimerColumn(false));
 
         // Create default timer column
         createTimerColumn(true);
