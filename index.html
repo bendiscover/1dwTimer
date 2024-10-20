@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>1 Day Wraps Countdown Timer</title>
+    <title>1 Day Wraps Multi-Timer</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             min-height: 100vh;
             margin: 0;
             background: linear-gradient(to bottom, #2c2c2c, #1a1a1a);
@@ -20,10 +19,24 @@
             max-width: 300px;
             margin-bottom: 2rem;
         }
-        #timer {
-            font-size: 6rem;
-            margin-bottom: 2rem;
+        .timer-columns {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            width: 100%;
+        }
+        .timer-column {
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 1rem;
+            width: 300px;
+        }
+        .timer-display {
+            font-size: 3rem;
+            margin-bottom: 1rem;
             color: #4CAF50;
+            text-align: center;
         }
         .input-group {
             display: flex;
@@ -34,11 +47,6 @@
         .input-group label {
             margin-bottom: 0.5rem;
             color: #cccccc;
-        }
-        #input-container, #control-container {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
         }
         .button-group {
             display: flex;
@@ -58,49 +66,61 @@
         button:hover {
             background-color: #444444;
         }
-        #start { background-color: #4CAF50; color: white; }
-        #stop { background-color: #f44336; color: white; }
+        .start { background-color: #4CAF50; color: white; }
+        .stop { background-color: #f44336; color: white; }
         .selected {
             background-color: #4CAF50;
             color: white;
+        }
+        #add-column {
+            font-size: 2rem;
+            padding: 0.5rem 1rem;
+            margin: 1rem;
+        }
+        #name-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .column-title {
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 1rem;
         }
     </style>
 </head>
 <body>
     <img id="logo" src="1daywraps.png" alt="1 Day Wraps Logo">
-    <div id="timer">00:00:00</div>
-    <div id="input-container">
-        <div class="input-group">
-            <label>Timer Duration:</label>
-            <div id="duration-buttons" class="button-group"></div>
-        </div>
-        <div class="input-group">
-            <label>Warning Time:</label>
-            <div id="warning-buttons" class="button-group"></div>
-        </div>
+    <div id="name-buttons">
+        <button onclick="toggleName(this)">Ben</button>
+        <button onclick="toggleName(this)">Chris</button>
+        <button onclick="toggleName(this)">Andrew</button>
+        <button onclick="toggleName(this)">Katie</button>
     </div>
-    <div id="control-container">
-        <button id="start">Start</button>
-        <button id="stop">Stop</button>
-    </div>
-    
+    <div class="timer-columns" id="timer-columns"></div>
+    <button id="add-column">+</button>
+
     <audio id="alarm-sound" src="TimerComplete02.wav"></audio>
     <audio id="warning-sound" src="Fantasy SFX 002.wav"></audio>
 
     <script>
-        const timerDisplay = document.getElementById('timer');
-        const startButton = document.getElementById('start');
-        const stopButton = document.getElementById('stop');
+        const timerColumns = document.getElementById('timer-columns');
+        const addColumnButton = document.getElementById('add-column');
         const alarmSound = document.getElementById('alarm-sound');
         const warningSound = document.getElementById('warning-sound');
-        const durationButtons = document.getElementById('duration-buttons');
-        const warningButtons = document.getElementById('warning-buttons');
 
-        let countdown;
-        let totalSeconds;
-        let warningSeconds;
-        let isRunning = false;
-        let warningTriggered = false;
+        let selectedNames = [];
+
+        function toggleName(button) {
+            button.classList.toggle('selected');
+            updateSelectedNames();
+        }
+
+        function updateSelectedNames() {
+            selectedNames = Array.from(document.querySelectorAll('#name-buttons .selected'))
+                .map(button => button.textContent);
+        }
 
         function formatButtonLabel(minutes) {
             if (minutes < 60) {
@@ -121,59 +141,114 @@
             }
         }
 
-        createButtons(durationButtons, 120, setDuration);
-        createButtons(warningButtons, 60, setWarning);
+        function createTimerColumn() {
+            const column = document.createElement('div');
+            column.className = 'timer-column';
+            
+            const title = document.createElement('div');
+            title.className = 'column-title';
+            title.textContent = selectedNames.join(' & ') || 'Timer';
+            column.appendChild(title);
 
-        function setDuration(minutes) {
-            totalSeconds = minutes * 60;
-            updateTimerDisplay();
-            selectButton(durationButtons, minutes);
-        }
+            const timerDisplay = document.createElement('div');
+            timerDisplay.className = 'timer-display';
+            timerDisplay.textContent = '00:00:00';
+            column.appendChild(timerDisplay);
 
-        function setWarning(minutes) {
-            warningSeconds = minutes * 60;
-            selectButton(warningButtons, minutes);
-        }
+            const durationGroup = document.createElement('div');
+            durationGroup.className = 'input-group';
+            durationGroup.innerHTML = '<label>Timer Duration:</label>';
+            const durationButtons = document.createElement('div');
+            durationButtons.className = 'button-group';
+            durationGroup.appendChild(durationButtons);
+            column.appendChild(durationGroup);
 
-        function selectButton(container, value) {
-            container.querySelectorAll('button').forEach(btn => {
-                btn.classList.toggle('selected', btn.textContent === formatButtonLabel(value));
-            });
-        }
+            const warningGroup = document.createElement('div');
+            warningGroup.className = 'input-group';
+            warningGroup.innerHTML = '<label>Warning Time:</label>';
+            const warningButtons = document.createElement('div');
+            warningButtons.className = 'button-group';
+            warningGroup.appendChild(warningButtons);
+            column.appendChild(warningGroup);
 
-        function startTimer() {
-            if (!isRunning && totalSeconds > 0) {
-                isRunning = true;
-                warningTriggered = false;
-                keepScreenOn();
-                countdown = setInterval(() => {
-                    if (totalSeconds <= warningSeconds && !warningTriggered) {
-                        warningSound.play();
-                        warningTriggered = true;
-                    }
+            const startButton = document.createElement('button');
+            startButton.className = 'start';
+            startButton.textContent = 'Start';
+            column.appendChild(startButton);
 
-                    if (totalSeconds <= 0) {
-                        stopTimer();
-                        alarmSound.play();
-                    } else {
-                        totalSeconds--;
-                        updateTimerDisplay();
-                    }
-                }, 1000);
+            const stopButton = document.createElement('button');
+            stopButton.className = 'stop';
+            stopButton.textContent = 'Stop';
+            column.appendChild(stopButton);
+
+            let totalSeconds = 0;
+            let warningSeconds = 0;
+            let isRunning = false;
+            let warningTriggered = false;
+            let countdown;
+
+            function setDuration(minutes) {
+                totalSeconds = minutes * 60;
+                updateTimerDisplay();
+                selectButton(durationButtons, minutes);
             }
-        }
 
-        function stopTimer() {
-            clearInterval(countdown);
-            isRunning = false;
-            allowScreenSleep();
-        }
+            function setWarning(minutes) {
+                warningSeconds = minutes * 60;
+                selectButton(warningButtons, minutes);
+            }
 
-        function updateTimerDisplay() {
-            const hours = Math.floor(totalSeconds / 3600);
-            const minutes = Math.floor((totalSeconds % 3600) / 60);
-            const seconds = totalSeconds % 60;
-            timerDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            function selectButton(container, value) {
+                container.querySelectorAll('button').forEach(btn => {
+                    btn.classList.toggle('selected', btn.textContent === formatButtonLabel(value));
+                });
+            }
+
+            function startTimer() {
+                if (!isRunning && totalSeconds > 0) {
+                    isRunning = true;
+                    warningTriggered = false;
+                    keepScreenOn();
+                    countdown = setInterval(() => {
+                        if (totalSeconds <= warningSeconds && !warningTriggered) {
+                            warningSound.play();
+                            warningTriggered = true;
+                        }
+
+                        if (totalSeconds <= 0) {
+                            stopTimer();
+                            alarmSound.play();
+                        } else {
+                            totalSeconds--;
+                            updateTimerDisplay();
+                        }
+                    }, 1000);
+                }
+            }
+
+            function stopTimer() {
+                clearInterval(countdown);
+                isRunning = false;
+                allowScreenSleep();
+            }
+
+            function updateTimerDisplay() {
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+                timerDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+
+            createButtons(durationButtons, 120, setDuration);
+            createButtons(warningButtons, 60, setWarning);
+
+            startButton.addEventListener('click', startTimer);
+            stopButton.addEventListener('click', stopTimer);
+
+            setDuration(60);
+            setWarning(20);
+
+            timerColumns.appendChild(column);
         }
 
         function keepScreenOn() {
@@ -196,12 +271,7 @@
             }
         }
 
-        startButton.addEventListener('click', startTimer);
-        stopButton.addEventListener('click', stopTimer);
-
-        // Initialize the timer with default values
-        setDuration(60);
-        setWarning(20);
+        addColumnButton.addEventListener('click', createTimerColumn);
     </script>
 </body>
 </html>
