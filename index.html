@@ -31,6 +31,7 @@
             border-radius: 10px;
             padding: 1rem;
             width: 300px;
+            position: relative;
         }
         .timer-display {
             font-size: 3rem;
@@ -41,7 +42,7 @@
         .input-group {
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
+            align-items: center;
             margin-bottom: 1rem;
         }
         .input-group label {
@@ -51,6 +52,7 @@
         .button-group {
             display: flex;
             flex-wrap: wrap;
+            justify-content: center;
             gap: 0.5rem;
             margin-bottom: 1rem;
             max-width: 400px;
@@ -76,10 +78,15 @@
             font-size: 2rem;
             padding: 0.5rem 1rem;
             margin: 1rem;
+            position: absolute;
+            right: -60px;
+            top: 50%;
+            transform: translateY(-50%);
         }
         #name-buttons {
             display: flex;
             flex-wrap: wrap;
+            justify-content: center;
             gap: 0.5rem;
             margin-bottom: 1rem;
         }
@@ -87,6 +94,16 @@
             font-size: 1.5rem;
             text-align: center;
             margin-bottom: 1rem;
+        }
+        .close-button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 1.2rem;
+            background: none;
+            border: none;
+            color: #ffffff;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -99,14 +116,12 @@
         <button onclick="toggleName(this)">Katie</button>
     </div>
     <div class="timer-columns" id="timer-columns"></div>
-    <button id="add-column">+</button>
 
     <audio id="alarm-sound" src="TimerComplete02.wav"></audio>
     <audio id="warning-sound" src="Fantasy SFX 002.wav"></audio>
 
     <script>
         const timerColumns = document.getElementById('timer-columns');
-        const addColumnButton = document.getElementById('add-column');
         const alarmSound = document.getElementById('alarm-sound');
         const warningSound = document.getElementById('warning-sound');
 
@@ -145,6 +160,15 @@
             const column = document.createElement('div');
             column.className = 'timer-column';
             
+            const closeButton = document.createElement('button');
+            closeButton.className = 'close-button';
+            closeButton.innerHTML = '&#10006;'; // X symbol
+            closeButton.addEventListener('click', () => {
+                column.remove();
+                updateAddColumnButton();
+            });
+            column.appendChild(closeButton);
+
             const title = document.createElement('div');
             title.className = 'column-title';
             title.textContent = selectedNames.join(' & ') || 'Timer';
@@ -249,6 +273,7 @@
             setWarning(20);
 
             timerColumns.appendChild(column);
+            updateAddColumnButton();
         }
 
         function keepScreenOn() {
@@ -271,7 +296,24 @@
             }
         }
 
-        addColumnButton.addEventListener('click', createTimerColumn);
+        function updateAddColumnButton() {
+            const existingButton = document.getElementById('add-column');
+            if (existingButton) {
+                existingButton.remove();
+            }
+
+            const lastColumn = timerColumns.lastElementChild;
+            if (lastColumn) {
+                const addColumnButton = document.createElement('button');
+                addColumnButton.id = 'add-column';
+                addColumnButton.textContent = '+';
+                addColumnButton.addEventListener('click', createTimerColumn);
+                lastColumn.appendChild(addColumnButton);
+            }
+        }
+
+        // Create the first timer column by default
+        createTimerColumn();
     </script>
 </body>
 </html>
