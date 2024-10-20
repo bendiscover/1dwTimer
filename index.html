@@ -124,11 +124,24 @@
             justify-content: center;
             margin-top: 1rem;
         }
+        .sound-test {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .sound-test:hover {
+            background-color: #2980b9;
+        }
     </style>
 </head>
 <body>
     <img id="logo" src="1daywraps.png" alt="1 Day Wraps Logo">
     <div class="timer-columns" id="timer-columns"></div>
+    <button class="sound-test" id="test-sound">Test Alarm Sound</button>
 
     <audio id="alarm-sound" src="TimerComplete02.wav"></audio>
     <audio id="warning-sound" src="Fantasy SFX 002.wav"></audio>
@@ -137,6 +150,11 @@
         const timerColumns = document.getElementById('timer-columns');
         const alarmSound = document.getElementById('alarm-sound');
         const warningSound = document.getElementById('warning-sound');
+        const testSoundButton = document.getElementById('test-sound');
+
+        testSoundButton.addEventListener('click', () => {
+            alarmSound.play();
+        });
 
         function formatButtonLabel(minutes) {
             if (minutes < 60) {
@@ -149,6 +167,11 @@
         }
 
         function createButtons(container, max, callback) {
+            const oneMinButton = document.createElement('button');
+            oneMinButton.textContent = '1m';
+            oneMinButton.addEventListener('click', () => callback(1));
+            container.appendChild(oneMinButton);
+
             for (let i = 5; i <= max; i += (i < 60 ? 5 : 10)) {
                 const button = document.createElement('button');
                 button.textContent = formatButtonLabel(i);
