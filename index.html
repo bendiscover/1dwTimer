@@ -143,8 +143,8 @@
     <div class="timer-columns" id="timer-columns"></div>
     <button class="sound-test" id="test-sound">Test Alarm Sound</button>
 
-    <audio id="alarm-sound" src="TimerComplete02.wav"></audio>
-    <audio id="warning-sound" src="Fantasy SFX 002.wav"></audio>
+    <audio id="alarm-sound" src="TimerComplete02.wav" preload="auto"></audio>
+    <audio id="warning-sound" src="Fantasy SFX 002.wav" preload="auto"></audio>
 
     <script>
         const timerColumns = document.getElementById('timer-columns');
@@ -157,13 +157,47 @@
         });
 
         function playAlarmSound() {
-            alarmSound.currentTime = 0;
-            alarmSound.play().catch(error => console.error('Error playing alarm:', error));
+            console.log('Attempting to play alarm sound');
+            if (alarmSound.readyState === 4) {
+                alarmSound.currentTime = 0;
+                alarmSound.play().then(() => {
+                    console.log('Alarm sound played successfully');
+                }).catch(error => {
+                    console.error('Error playing alarm:', error);
+                });
+            } else {
+                console.log('Alarm sound not ready, waiting...');
+                alarmSound.addEventListener('canplaythrough', () => {
+                    alarmSound.currentTime = 0;
+                    alarmSound.play().then(() => {
+                        console.log('Alarm sound played successfully after waiting');
+                    }).catch(error => {
+                        console.error('Error playing alarm after waiting:', error);
+                    });
+                }, { once: true });
+            }
         }
 
         function playWarningSound() {
-            warningSound.currentTime = 0;
-            warningSound.play().catch(error => console.error('Error playing warning:', error));
+            console.log('Attempting to play warning sound');
+            if (warningSound.readyState === 4) {
+                warningSound.currentTime = 0;
+                warningSound.play().then(() => {
+                    console.log('Warning sound played successfully');
+                }).catch(error => {
+                    console.error('Error playing warning:', error);
+                });
+            } else {
+                console.log('Warning sound not ready, waiting...');
+                warningSound.addEventListener('canplaythrough', () => {
+                    warningSound.currentTime = 0;
+                    warningSound.play().then(() => {
+                        console.log('Warning sound played successfully after waiting');
+                    }).catch(error => {
+                        console.error('Error playing warning after waiting:', error);
+                    });
+                }, { once: true });
+            }
         }
 
         function formatButtonLabel(minutes) {
@@ -291,6 +325,7 @@
                         }
 
                         if (totalSeconds <= 0) {
+                            console.log('Timer reached zero');
                             stopTimer();
                             playAlarmSound();
                         } else {
