@@ -74,21 +74,22 @@
             background-color: #4CAF50;
             color: white;
         }
+        #add-column-container {
+            display: flex;
+            align-items: center;
+            margin-top: 1rem;
+        }
         #add-column {
             font-size: 2rem;
             padding: 0.5rem 1rem;
-            margin: 1rem;
-            position: absolute;
-            right: -60px;
-            top: 50%;
-            transform: translateY(-50%);
+            margin-left: 1rem;
         }
-        #name-buttons {
+        .name-buttons {
             display: flex;
             flex-wrap: wrap;
-            justify-content: center;
             gap: 0.5rem;
             margin-bottom: 1rem;
+            justify-content: center;
         }
         .column-title {
             font-size: 1.5rem;
@@ -99,7 +100,7 @@
             position: absolute;
             top: 5px;
             right: 5px;
-            font-size: 1.2rem;
+            font-size: 1.5rem;
             background: none;
             border: none;
             color: #ffffff;
@@ -109,19 +110,23 @@
 </head>
 <body>
     <img id="logo" src="1daywraps.png" alt="1 Day Wraps Logo">
-    <div id="name-buttons">
-        <button onclick="toggleName(this)">Ben</button>
-        <button onclick="toggleName(this)">Chris</button>
-        <button onclick="toggleName(this)">Andrew</button>
-        <button onclick="toggleName(this)">Katie</button>
-    </div>
     <div class="timer-columns" id="timer-columns"></div>
+    <div id="add-column-container">
+        <div class="name-buttons">
+            <button onclick="toggleName(this)">Ben</button>
+            <button onclick="toggleName(this)">Chris</button>
+            <button onclick="toggleName(this)">Andrew</button>
+            <button onclick="toggleName(this)">Katie</button>
+        </div>
+        <button id="add-column">+</button>
+    </div>
 
     <audio id="alarm-sound" src="TimerComplete02.wav"></audio>
     <audio id="warning-sound" src="Fantasy SFX 002.wav"></audio>
 
     <script>
         const timerColumns = document.getElementById('timer-columns');
+        const addColumnButton = document.getElementById('add-column');
         const alarmSound = document.getElementById('alarm-sound');
         const warningSound = document.getElementById('warning-sound');
 
@@ -133,7 +138,7 @@
         }
 
         function updateSelectedNames() {
-            selectedNames = Array.from(document.querySelectorAll('#name-buttons .selected'))
+            selectedNames = Array.from(document.querySelectorAll('.name-buttons .selected'))
                 .map(button => button.textContent);
         }
 
@@ -156,23 +161,32 @@
             }
         }
 
-        function createTimerColumn() {
+        function createTimerColumn(isDefault = false) {
             const column = document.createElement('div');
             column.className = 'timer-column';
             
-            const closeButton = document.createElement('button');
-            closeButton.className = 'close-button';
-            closeButton.innerHTML = '&#10006;'; // X symbol
-            closeButton.addEventListener('click', () => {
-                column.remove();
-                updateAddColumnButton();
-            });
-            column.appendChild(closeButton);
-
             const title = document.createElement('div');
             title.className = 'column-title';
             title.textContent = selectedNames.join(' & ') || 'Timer';
             column.appendChild(title);
+
+            if (!isDefault) {
+                const closeButton = document.createElement('button');
+                closeButton.className = 'close-button';
+                closeButton.innerHTML = '&times;';
+                closeButton.addEventListener('click', () => column.remove());
+                column.appendChild(closeButton);
+            }
+
+            const nameButtons = document.createElement('div');
+            nameButtons.className = 'name-buttons';
+            ['Ben', 'Chris', 'Andrew', 'Katie'].forEach(name => {
+                const button = document.createElement('button');
+                button.textContent = name;
+                button.onclick = function() { toggleName(this); };
+                nameButtons.appendChild(button);
+            });
+            column.appendChild(nameButtons);
 
             const timerDisplay = document.createElement('div');
             timerDisplay.className = 'timer-display';
@@ -273,7 +287,6 @@
             setWarning(20);
 
             timerColumns.appendChild(column);
-            updateAddColumnButton();
         }
 
         function keepScreenOn() {
@@ -296,24 +309,10 @@
             }
         }
 
-        function updateAddColumnButton() {
-            const existingButton = document.getElementById('add-column');
-            if (existingButton) {
-                existingButton.remove();
-            }
+        addColumnButton.addEventListener('click', () => createTimerColumn(false));
 
-            const lastColumn = timerColumns.lastElementChild;
-            if (lastColumn) {
-                const addColumnButton = document.createElement('button');
-                addColumnButton.id = 'add-column';
-                addColumnButton.textContent = '+';
-                addColumnButton.addEventListener('click', createTimerColumn);
-                lastColumn.appendChild(addColumnButton);
-            }
-        }
-
-        // Create the first timer column by default
-        createTimerColumn();
+        // Create default timer column
+        createTimerColumn(true);
     </script>
 </body>
 </html>
