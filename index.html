@@ -141,7 +141,7 @@
 <body>
     <img id="logo" src="1daywraps.png" alt="1 Day Wraps Logo">
     <div class="timer-columns" id="timer-columns"></div>
-    <button class="sound-test" id="test-sound">Test Alarm Sound!</button>
+    <button class="sound-test" id="test-sound">Test Alarm Sound</button>
 
     <audio id="alarm-sound" src="TimerComplete02.wav"></audio>
     <audio id="warning-sound" src="Fantasy SFX 002.wav"></audio>
@@ -157,12 +157,12 @@
         });
 
         function playAlarmSound() {
-            alarmSound.currentTime = 0; // Reset the audio to the beginning
+            alarmSound.currentTime = 0;
             alarmSound.play().catch(error => console.error('Error playing alarm:', error));
         }
 
         function playWarningSound() {
-            warningSound.currentTime = 0; // Reset the audio to the beginning
+            warningSound.currentTime = 0;
             warningSound.play().catch(error => console.error('Error playing warning:', error));
         }
 
