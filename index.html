@@ -126,22 +126,30 @@
         }
         .sound-test {
             margin-top: 1rem;
-            padding: 0.5rem 1rem;
-            background-color: #3498db;
+            margin-bottom: 2rem;
+            padding: 0.7rem 1.5rem;
+            background-color: #333333;
             color: white;
-            border: none;
+            border: 1px solid #555555;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 1.2rem;
         }
         .sound-test:hover {
-            background-color: #2980b9;
+            background-color: #444444;
+        }
+        @media (max-width: 768px) {
+            #add-column {
+                position: static;
+                margin-top: 1rem;
+            }
         }
     </style>
 </head>
 <body>
     <img id="logo" src="1daywraps.png" alt="1 Day Wraps Logo">
     <div class="timer-columns" id="timer-columns"></div>
-    <button class="sound-test" id="test-sound">Test Alarm Sound!</button>
+    <button class="sound-test" id="test-sound">Test Alarm Sound</button>
 
     <audio id="alarm-sound" src="TimerComplete02.wav" preload="auto"></audio>
     <audio id="warning-sound" src="Fantasy SFX 002.wav" preload="auto"></audio>
@@ -153,28 +161,32 @@
         const testSoundButton = document.getElementById('test-sound');
 
         let wakeLock = null;
+        let wakeLockSupported = 'wakeLock' in navigator;
 
         testSoundButton.addEventListener('click', () => {
             playAlarmSound();
         });
 
-        function playAlarmSound() {
-            console.log('Attempting to play alarm sound');
-            alarmSound.currentTime = 0;
-            alarmSound.play().then(() => {
-                console.log('Alarm sound played successfully');
+        function playSound(sound, fallbackAction) {
+            console.log(`Attempting to play ${sound.id}`);
+            sound.currentTime = 0;
+            sound.play().then(() => {
+                console.log(`${sound.id} played successfully`);
             }).catch(error => {
-                console.error('Error playing alarm:', error);
+                console.error(`Error playing ${sound.id}:`, error);
+                if (fallbackAction) fallbackAction();
+            });
+        }
+
+        function playAlarmSound() {
+            playSound(alarmSound, () => {
+                alert("Timer Complete!");
             });
         }
 
         function playWarningSound() {
-            console.log('Attempting to play warning sound');
-            warningSound.currentTime = 0;
-            warningSound.play().then(() => {
-                console.log('Warning sound played successfully');
-            }).catch(error => {
-                console.error('Error playing warning:', error);
+            playSound(warningSound, () => {
+                console.log("Warning: Timer nearing completion!");
             });
         }
 
@@ -356,25 +368,32 @@
                 addButton.addEventListener('click', () => createTimerColumn(false));
                 timerColumns.appendChild(addButton);
             }
-            const lastColumn = Array.from(timerColumns.children).filter(child => child.className === 'timer-column').pop();
-            if (lastColumn) {
-                const rect = lastColumn.getBoundingClientRect();
-                const containerRect = timerColumns.getBoundingClientRect();
-                addButton.style.left = `${rect.right - containerRect.left + 20}px`;
-                addButton.style.top = `${rect.top - containerRect.top + (rect.height / 2) - (addButton.offsetHeight / 2)}px`;
-            } else {
+            if (window.innerWidth <= 768) {
                 addButton.style.position = 'static';
                 addButton.style.marginTop = '1rem';
+            } else {
+                const lastColumn = Array.from(timerColumns.children).filter(child => child.className === 'timer-column').pop();
+                if (lastColumn) {
+                    const rect = lastColumn.getBoundingClientRect();
+                    const containerRect = timerColumns.getBoundingClientRect();
+                    addButton.style.position = 'absolute';
+                    addButton.style.left = `${rect.right - containerRect.left + 20}px`;
+                    addButton.style.top = `${rect.top - containerRect.top + (rect.height / 2) - (addButton.offsetHeight / 2)}px`;
+                } else {
+                    addButton.style.position = 'static';
+                    addButton.style.marginTop = '1rem';
+                }
             }
         }
 
         async function keepScreenOn() {
-            if ('wakeLock' in navigator && wakeLock === null) {
+            if (wakeLockSupported && wakeLock === null) {
                 try {
                     wakeLock = await navigator.wakeLock.request('screen');
                     console.log('Screen wake lock is active');
                 } catch (err) {
                     console.error(`${err.name}, ${err.message}`);
+                    wakeLockSupported = false;  // Disable future attempts if it fails
                 }
             }
         }
@@ -394,6 +413,16 @@
 
         // Create default timer column
         createTimerColumn(true);
+
+        // Check if audio files are loading
+        [alarmSound, warningSound].forEach(sound => {
+            sound.addEventListener('error', (e) => {
+                console.error(`Error loading ${sound.id}:`, e);
+            });
+        });
+
+        // Update add button position on window resize
+        window.addEventListener('resize', updateAddButtonPosition);
     </script>
 </body>
 </html>
